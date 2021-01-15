@@ -75,21 +75,21 @@ function acme_list(){
         echo '<h4>Your choices:</h4>';
         echo 'Division: ' . $_POST['acme_division'] .'<br>';
         echo 'Conference: ' . $_POST['acme_conference'] . '<br>';
-        echo '<br><input size="250" type="text" id="acme_team_data" name="acme_team_data" value="'.htmlentities($value).'" readonly><br>';
+        echo '<br><input size="50" type="text" id="acme_team_data" name="acme_team_data" value="'.htmlentities($value).'" readonly><br>';
         break;
       case ($_POST['acme_division'] == "All" && $_POST['acme_conference'] != "All"):
         $value = '[acme_team_data conference="'.$_POST['acme_conference'].'"]';
         echo '<h4>Your choices:</h4>';
         echo 'Division: ' . $_POST['acme_division'] .'<br>';
         echo 'Conference: ' . $_POST['acme_conference'] . '<br>';
-        echo '<br><input size="100" type="text" id="acme_team_data" name="acme_team_data" value="'.htmlentities($value).'" readonly><br>';
+        echo '<br><input size="60" type="text" id="acme_team_data" name="acme_team_data" value="'.htmlentities($value).'" readonly><br>';
         break;
       default:
         $value = '[acme_team_data conference="'.$_POST['acme_conference'].'" division="'.$_POST['acme_division'].'"]';
         echo '<h4>Your choices:</h4>';
         echo 'Division: ' . $_POST['acme_division'] .'<br>';
         echo 'Conference: ' . $_POST['acme_conference'] . '<br>';
-        echo '<br><input size="100" type="text" id="acme_team_data" name="acme_team_data" value="'.htmlentities($value).'" readonly><br>';
+        echo '<br><input size="80" type="text" id="acme_team_data" name="acme_team_data" value="'.htmlentities($value).'" readonly><br>';
         break;
     }
   }
@@ -144,15 +144,17 @@ function resulta_acme_shortcode($atts){
 
   $team_data = fetch_team_data();
   if(!empty( $team_data )) {
-    $team_table = '<table style="width:100%">';
+    $team_table = '<table style="width:100%" id="acme_nfl_team_data">';
 
     // Declare the header column
     $team_table .= '<thead style="background:#ff6b00; color:#fff">';
     $team_table .= '<tr>';
+    $count=0;
     foreach( $team_data->results->columns as $column ) {
-      $team_table .= '<th>';
+      $team_table .= '<th onclick="sortTable('.$count.')">';
         $team_table .= $column;
       $team_table .= '</th>';
+      $count++;
     }
     $team_table .= '</tr>';
     $team_table .= '</thead>';
@@ -198,7 +200,17 @@ function resulta_acme_shortcode($atts){
     }
 
     $team_table .= '</table>';
+    $team_table .= '<script src="'.plugin_dir_path( __FILE__ ).'assets/resulta.js"></script>';
   }
   return $team_table;
 }
 add_shortcode( 'acme_team_data', 'resulta_acme_shortcode' );
+
+// Adding A settings link for the plugin on the Settings Page
+add_filter('plugin_action_links_'.plugin_basename(__FILE__), 'resulta_add_plugin_page_settings_link');
+function resulta_add_plugin_page_settings_link( $links ) {
+	$links = array_merge(array('<a href="' .
+		admin_url( 'admin.php?page=acme_list' ) .
+		'">' . __('Settings') . '</a>'), $links);
+	return $links;
+}

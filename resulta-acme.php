@@ -13,6 +13,12 @@
  if ( ! defined( 'WPINC' ) ) {
  	die;
  }
+ //Define the constants to be used
+ if (!defined('RESULTA_ACME_PLUGIN_NAME'))
+     define('RESULTA_ACME_PLUGIN_NAME', trim(dirname(plugin_basename(__FILE__)), '/'));
+
+ if (!defined('RESULTA_ACME_PLUGIN_URL'))
+     define('RESULTA_ACME_PLUGIN_URL', plugins_url() . '/' . RESULTA_ACME_PLUGIN_NAME);
 
  // function to create menu page, and submenu pages.
  function resulta_modifymenu() {
@@ -28,6 +34,15 @@
  	);
  }
  add_action( 'admin_menu', 'resulta_modifymenu' );
+
+//Register/Enqueue Styles and Scripts
+function resulta_acme_enqueue_scripts(){
+  wp_register_script('resulta_main_js', RESULTA_ACME_PLUGIN_URL.'/assets/resulta.js');
+  wp_register_script('DataTable', 'https://cdnjs.cloudflare.com/ajax/libs/datatables/1.10.12/js/jquery.dataTables.min.js');
+  wp_register_style('bootstrap_cdn', 'https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/css/bootstrap.min.css');
+  wp_register_style('font_awesome_cdn', 'http://maxcdn.bootstrapcdn.com/font-awesome/4.1.0/css/font-awesome.min.css');
+}
+add_action( 'wp_enqueue_scripts', 'resulta_acme_enqueue_scripts' );
 
 // Callback function for menu page
 function acme_list(){
@@ -144,15 +159,16 @@ function resulta_acme_shortcode($atts){
 
   $team_data = fetch_team_data();
   if(!empty( $team_data )) {
-    $team_table = '<table style="width:100%" id="acme_nfl_team_data">';
+    $team_table = '<table class="table table-striped table-bordered table-hover" id="acme_nfl_team_data">';
 
     // Declare the header column
-    $team_table .= '<thead style="background:#ff6b00; color:#fff">';
+    $team_table .= '<thead class="bg-success">';
     $team_table .= '<tr>';
     $count=0;
     foreach( $team_data->results->columns as $column ) {
-      $team_table .= '<th onclick="sortTable('.$count.')">';
-        $team_table .= $column;
+      $team_table .= '<th style="cursor:pointer">';
+        $team_table .= $column." ";
+        $team_table .= ' <i class="ms-2 fa fa-sort"></i>';
       $team_table .= '</th>';
       $count++;
     }
@@ -165,7 +181,7 @@ function resulta_acme_shortcode($atts){
       if(empty($atts)){
         $team_table .= '<tr>';
         foreach($team as $key => $value){
-          $team_table .= '<td>';
+          $team_table .= '<td data-table-header="'.$key.'">';
           $team_table .= $value;
           $team_table .= '</td>';
         }
@@ -200,7 +216,12 @@ function resulta_acme_shortcode($atts){
     }
 
     $team_table .= '</table>';
-    $team_table .= '<script src="'.plugin_dir_path( __FILE__ ).'assets/resulta.js"></script>';
+
+    // Only load these scripts where the shortcode is used
+    wp_enqueue_style('bootstrap_cdn');
+    wp_enqueue_style('font_awesome_cdn');
+    wp_enqueue_script('resulta_main_js');
+    wp_enqueue_script('DataTable');
   }
   return $team_table;
 }
